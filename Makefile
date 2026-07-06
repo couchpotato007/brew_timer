@@ -54,6 +54,10 @@ odin_object:
 		-debug \
 		-out:$(BUILD_OBJ)/game.o
 
+clay_android:
+	cp $(CLAY_DIR)/clay.h $(BUILD_OBJ)/clay.c && \
+	clang-21 -c -DCLAY_IMPLEMENTATION -o $(BUILD_OBJ)/clay.o -ffreestanding -static -target aarch64-linux-android21 $(BUILD_OBJ)/clay.c -fPIC -O3 && ar r $(SRC)/clay-odin/android/clay.a $(BUILD_OBJ)/clay.o
+
 
 native_glue:
 	mkdir -p $(BUILD_OBJ)
@@ -64,12 +68,12 @@ native_glue:
 		-o $(BUILD_OBJ)/main.o
 
 
-odin_android: raylib_android odin_object native_glue
+odin_android: raylib_android odin_object native_glue clay_android
 	mkdir -p $(ANDROID_DIR)/lib/lib/$(ABI)
 	$(CC_ANDROID) -shared \
 		-o $(ANDROID_DIR)/lib/lib/$(ABI)/libmain.so \
 		$(BUILD_OBJ)/*.o \
-		$(CLAY_DIR)/bindings/odin/clay-odin/android/clay.a \
+		$(SRC)/clay-odin/android/clay.a \
 		-L$(RAYLIB_BUILD)/$(ABI) -lraylib \
 		-lGLESv2 -llog -landroid -lEGL -lm -lOpenSLES -ldl \
 		-Wl,--wrap,fopen \
@@ -90,3 +94,4 @@ clean:
 	rm -rf $(RAYLIB_BUILD)
 	rm -rf $(RAYLIB_DIR)/Build
 	rm -rf $(ANDROID_DIR)/app/src/main/jniLibs
+	rm -f $(SRC)/clay-odin/android/clay.a
