@@ -1,6 +1,6 @@
 # Brew Timer
 
-This Pour Over coffee ratio calculator (hopefully in the future with Presets and
+This is a Pour Over coffee ratio calculator (hopefully in the future with Presets and
 Timer for guided brews)
 
 It uses [raylib](https://github.com/raysan5/raylib) for rendering +
