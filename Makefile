@@ -31,17 +31,20 @@ run:
 
 raylib_android:
 	mkdir -p $(RAYLIB_BUILD)/$(ABI)
-	cd $(RAYLIB_DIR) && \
-	cmake -B Build \
-        -G "Ninja" \
+
+	cmake -B $(RAYLIB_BUILD)/build \
+		-S $(RAYLIB_DIR) \
+		-G "Ninja" \
 		-DCMAKE_BUILD_TYPE=MinSizeRel \
 		-DCMAKE_TOOLCHAIN_FILE=$(NDK)/build/cmake/android.toolchain.cmake \
 		-DPLATFORM=Android \
 		-DANDROID_ABI=arm64-v8a \
 		-DANDROID_PLATFORM=android-$(API) \
-		-DBUILD_EXAMPLES=OFF  # or ON if you want examples
-	cmake --build $(RAYLIB_DIR)/Build
-	cp $(RAYLIB_DIR)/Build/raylib/libraylib.a $(RAYLIB_BUILD)/$(ABI)
+		-DBUILD_EXAMPLES=OFF
+
+	cmake --build $(RAYLIB_BUILD)/build
+
+	cp $(RAYLIB_BUILD)/build/raylib/libraylib.a $(RAYLIB_BUILD)/$(ABI)
 
 odin_object:
 	mkdir -p $(BUILD_OBJ)
