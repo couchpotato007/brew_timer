@@ -16,9 +16,30 @@
         "type": "github"
       }
     },
+    "odin-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783435212,
+        "narHash": "sha256-yjdpPzSBuwtmw57djO7C7omGRjrF34qcExvpsR39m0g=",
+        "owner": "couchpotato007",
+        "repo": "odin-overlay",
+        "rev": "29ff4a44300d0d4cba262c4f0d28d327d568a786",
+        "type": "github"
+      },
+      "original": {
+        "owner": "couchpotato007",
+        "repo": "odin-overlay",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "odin-overlay": "odin-overlay"
       }
     }
   },

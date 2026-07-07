@@ -12,6 +12,8 @@ run: bool
 
 FONT_ID_BODY_16 :: 0
 
+droplet_tex: raylib.Texture2D
+
 COLOR_ROSEWATER :: clay.Color{245, 224, 220, 255}
 COLOR_FLAMINGO :: clay.Color{242, 205, 205, 255}
 COLOR_PINK :: clay.Color{245, 194, 231, 255}
@@ -62,6 +64,8 @@ App_State :: struct {
 	input_mode:       Input_Mode,
 	coffee_step:      i32, // 10 (=1.0g) or 5 (=0.5g)
 	step_amount:      i32,
+	bloom_ratio:      i32,
+	accumulated:      bool,
 }
 
 state := App_State {
@@ -72,7 +76,11 @@ state := App_State {
 	input_mode       = .Coffee,
 	coffee_step      = 10,
 	step_amount      = 5,
+	bloom_ratio      = 3,
+	accumulated      = true,
 }
+
+MAX_STEPS :: 5
 
 Derived :: struct {
 	water:        f32,
@@ -80,7 +88,7 @@ Derived :: struct {
 	coffee_label: string,
 	water_label:  string,
 	ratio_label:  string,
-	steps:        [5]Step_Info,
+	steps:        [MAX_STEPS]Step_Info,
 }
 
 derived := Derived{}
@@ -227,7 +235,7 @@ createLayout :: proc(lerpValue: f32, frametime: f32) -> clay.ClayArray(clay.Rend
 						padding = {left = sd(8), right = sd(8), top = sd(4), bottom = sd(4)},
 					}
 					if Button(
-						"Dose",
+						"Water",
 						{
 							backgroundColor = state.input_mode == .Coffee ? COLOR_SURFACE0 : COLOR_BASE,
 							layout = switch_layout,
@@ -238,7 +246,7 @@ createLayout :: proc(lerpValue: f32, frametime: f32) -> clay.ClayArray(clay.Rend
 						state.input_mode = .Coffee
 					}
 					if Button(
-						"Water",
+						"Dose",
 						{
 							backgroundColor = state.input_mode == .Water ? COLOR_SURFACE0 : COLOR_BASE,
 							layout = switch_layout,
@@ -259,10 +267,209 @@ createLayout :: proc(lerpValue: f32, frametime: f32) -> clay.ClayArray(clay.Rend
 				{layout = {layoutDirection = clay.LayoutDirection.LeftToRight, childGap = sd(4)}},
 				) {
 					for i: i32 = 0; i < state.step_amount; i += 1 {
-						clay.TextDynamic(
-							fmt.tprintf("time:  %d\nwater: %d", derived.steps[i].time, derived.steps[i].water),
-							{fontSize = sp(23), textColor = COLOR_TEXT},
-						)
+						if clay.UI_AutoId()(
+						{layout = {layoutDirection = .TopToBottom, childAlignment = {x = .Center}, childGap = sd(6)}},
+						) {
+							label: string
+							if i == 1 {
+								label = fmt.tprintf("%dst", i)
+							} else if i == 2 {
+								label = fmt.tprintf("%dnd", i)
+							} else if i == 3 {
+								label = fmt.tprintf("%drd", i)
+							} else {
+								label = fmt.tprintf("%dth", i)
+							}
+							clay.TextDynamic(fmt.tprint(label), {fontSize = sp(18), textColor = COLOR_TEXT})
+							clay.TextDynamic(
+								fmt.tprintf("%dg", derived.steps[i].water),
+								{fontSize = sp(28), textColor = COLOR_RED},
+							)
+							clay.TextDynamic(
+								fmt.tprintf("%d", derived.steps[i].time),
+								{fontSize = sp(20), textColor = COLOR_TEXT},
+							)
+						}
+					}
+				}
+				if clay.UI_AutoId()(
+				{
+					layout = {
+						layoutDirection = clay.LayoutDirection.LeftToRight,
+						childAlignment = {x = clay.LayoutAlignmentX.Center},
+						childGap = sd(4),
+					},
+				},
+				) {
+					if clay.UI_AutoId()(
+					{
+						layout = {
+							layoutDirection = clay.LayoutDirection.TopToBottom,
+							childAlignment = {x = clay.LayoutAlignmentX.Center},
+							childGap = sd(4),
+						},
+					},
+					) {
+						clay.TextStatic("Bloom ratio", {fontSize = sp(22), textColor = COLOR_TEXT_T50})
+						if clay.UI_AutoId()(
+						{
+							layout = {
+								layoutDirection = clay.LayoutDirection.LeftToRight,
+								childGap = sd(6),
+								padding = clay.PaddingAll(sd(6)),
+							},
+							cornerRadius = clay.CornerRadiusAll(f32(sd(32))),
+							backgroundColor = COLOR_BASE,
+						},
+						) {
+							switch_layout := clay.LayoutConfig {
+								padding = {left = sd(8), right = sd(8), top = sd(4), bottom = sd(4)},
+							}
+							if Button(
+								"x3",
+								{
+									backgroundColor = state.bloom_ratio == 4 ? COLOR_SURFACE0 : COLOR_BASE,
+									layout = switch_layout,
+									cornerRadius = clay.CornerRadiusAll(f32(sd(32))),
+								},
+								{fontSize = sp(20), textColor = COLOR_TEXT, textAlignment = .Center},
+							) {
+								state.bloom_ratio = 4
+							}
+							if Button(
+								"x4",
+								{
+									backgroundColor = state.bloom_ratio == 3 ? COLOR_SURFACE0 : COLOR_BASE,
+									layout = switch_layout,
+									cornerRadius = clay.CornerRadiusAll(f32(sd(32))),
+								},
+								{fontSize = sp(20), textColor = COLOR_TEXT, textAlignment = .Center},
+							) {
+								state.bloom_ratio = 3
+							}
+						}
+					}
+					if clay.UI_AutoId()(
+					{
+						layout = {
+							layoutDirection = clay.LayoutDirection.TopToBottom,
+							childAlignment = {x = clay.LayoutAlignmentX.Center},
+							childGap = sd(4),
+						},
+					},
+					) {
+						clay.TextStatic("Pours", {fontSize = sp(22), textColor = COLOR_TEXT_T50})
+						if clay.UI_AutoId()(
+						{
+							layout = {
+								layoutDirection = clay.LayoutDirection.LeftToRight,
+								childGap = sd(8),
+								padding = clay.PaddingAll(sd(8)),
+							},
+							cornerRadius = clay.CornerRadiusAll(f32(sd(32))),
+							backgroundColor = COLOR_BASE,
+						},
+						) {
+							is_pressed := pressed()
+							if is_pressed {
+								if state.step_amount < MAX_STEPS {
+									state.step_amount += 1
+								} else {
+									state.step_amount = 2
+								}
+							}
+							for i: i32 = 0; i < MAX_STEPS; i += 1 {
+								switch_layout := clay.LayoutConfig {
+									padding = clay.PaddingAll(sd(4)),
+									sizing  = {clay.SizingGrow(), clay.SizingGrow()},
+								}
+								if clay.UI_AutoId()(
+								{
+									backgroundColor = i < state.step_amount ? COLOR_RED : COLOR_BASE,
+									layout = switch_layout,
+									cornerRadius = clay.CornerRadiusAll(f32(sd(32))),
+									image = {imageData = &droplet_tex},
+								},
+								) {
+									if clay.UI_AutoId()(
+									{
+										layout = {
+											sizing = {clay.SizingFixed(f32(sd(15))), clay.SizingFixed(f32(sd(15)))},
+										},
+										image = {imageData = &droplet_tex},
+									},
+									) {
+									}
+
+								}
+							}
+						}
+					}
+					if clay.UI_AutoId()(
+					{
+						layout = {
+							layoutDirection = clay.LayoutDirection.TopToBottom,
+							childAlignment = {x = clay.LayoutAlignmentX.Center},
+							childGap = sd(4),
+						},
+					},
+					) {
+						clay.TextStatic("Accumulated", {fontSize = sp(22), textColor = COLOR_TEXT_T50})
+						if clay.UI(clay.ID("AccumulatedToggle"))(
+						{
+							layout = {
+								layoutDirection = clay.LayoutDirection.LeftToRight,
+								// childGap = sd(6),
+								padding = clay.PaddingAll(sd(8)),
+								childAlignment = {x = state.accumulated ? .Right : .Left, y = .Center},
+								sizing = {
+									height = clay.SizingFixed(f32(sd(38))),
+									width = clay.SizingFixed(f32(sd(60))),
+								},
+							},
+							cornerRadius = clay.CornerRadiusAll(f32(sd(16))),
+							backgroundColor = COLOR_BASE,
+							border = {
+								color = state.accumulated ? COLOR_MAUVE : COLOR_SURFACE0,
+								width = {left = sd(1), right = sd(1), bottom = sd(1), top = sd(1)},
+							},
+							transition = {
+								handler = clay.EaseOut,
+								duration = 0.18,
+								properties = {
+									clay.TransitionProperty.BackgroundColor,
+									clay.TransitionProperty.BorderColor,
+								},
+							},
+						},
+						) {
+							is_pressed := pressed()
+							if is_pressed {
+								state.accumulated = !state.accumulated
+							}
+							padding := clay.Padding {
+								left   = sd(4),
+								right  = sd(4),
+								top    = sd(4),
+								bottom = sd(4),
+							}
+							if clay.UI(clay.ID("AccumulatedKnob"))(
+							{
+								layout = {
+									padding = padding,
+									sizing = {clay.SizingFixed(f32(sd(22))), clay.SizingFixed(f32(sd(22)))},
+								},
+								cornerRadius = clay.CornerRadiusAll(f32(sd(32))),
+								backgroundColor = state.accumulated ? COLOR_MAUVE : COLOR_SURFACE0,
+								transition = {
+									handler = clay.EaseOut,
+									duration = 0.18,
+									properties = {clay.TransitionProperty.BackgroundColor, clay.TransitionProperty.X},
+								},
+							},
+							) {
+							}
+						}
 					}
 				}
 			}
@@ -410,8 +617,10 @@ init :: proc() {
 	raylib.SetTargetFPS(raylib.GetMonitorRefreshRate(0))
 	when ODIN_PLATFORM_SUBTARGET == .Android {
 		load_font(FONT_ID_BODY_16, 56, "Iosevka-Regular.ttf")
+		droplet_tex = raylib.LoadTexture("droplet.png")
 	} else {
 		load_font(FONT_ID_BODY_16, 56, "assets/Iosevka-Regular.ttf")
+		droplet_tex = raylib.LoadTexture("assets/droplet.png")
 	}
 }
 

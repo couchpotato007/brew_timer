@@ -3,17 +3,26 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    odin-overlay = {
+      url = "github:couchpotato007/odin-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
     {
       self,
       nixpkgs,
+      odin-overlay,
     }:
     let
       system = "x86_64-linux";
       lib = nixpkgs.lib;
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ odin-overlay.overlays.default ];
+      };
+
     in
     {
       devShells.${system}.default = pkgs.mkShell {
@@ -21,7 +30,7 @@
           glibc
           cmake
           gcc
-          odin
+          odin-bin.stable
           ols
           raylib
           gdb
@@ -56,11 +65,6 @@
         ];
 
         EMSCRIPTEN_SDK_DIR = "${pkgs.emscripten}";
-
-        shellHook = ''
-          alias g++="g++ -std=c++14 -Wall --pedantic-errors"
-          alias gcc="gcc -std=c99 –-Wall --pedantic-errors"
-        '';
       };
     };
 }
