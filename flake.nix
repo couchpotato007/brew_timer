@@ -31,7 +31,7 @@
           cmake
           gcc
           odin-bin.stable
-          ols
+          ols-bin.stable
           raylib
           gdb
           emscripten

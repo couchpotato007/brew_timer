@@ -23,11 +23,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783435212,
-        "narHash": "sha256-yjdpPzSBuwtmw57djO7C7omGRjrF34qcExvpsR39m0g=",
+        "lastModified": 1783512155,
+        "narHash": "sha256-IZZvNVMkvPKnLnXKBTo5LSUVrb8UOaZ9ky/i9YI4Kj0=",
         "owner": "couchpotato007",
         "repo": "odin-overlay",
-        "rev": "29ff4a44300d0d4cba262c4f0d28d327d568a786",
+        "rev": "c050064edd62ddb001272c633de2c7d329cdc799",
         "type": "github"
       },
       "original": {

@@ -6,7 +6,7 @@ SRC=app
 ANDROID_DIR=android
 NDK=$(HOME)/Android/Sdk/ndk/30.0.14904198/
 SDK=$(HOME)/Android/Sdk/
-API=29
+API=35
 ABI=arm64-v8a
 
 RAYLIB_DIR=external/raylib
@@ -28,6 +28,8 @@ desktop:
 run:
 	$(ODIN) run $(SRC)
 
+run-debug:
+	$(ODIN) run --debug $(SRC)
 
 raylib_android:
 	mkdir -p $(RAYLIB_BUILD)/$(ABI)
@@ -55,9 +57,9 @@ odin_object:
 		-build-mode:obj \
 		-no-entry-point \
 		-debug \
-		-out:$(BUILD_OBJ)/game.o
+		-out:$(BUILD_OBJ)/app.o
 
-clay_android:
+clay_android: $(CLAY_DIR)/clay.h
 	cp $(CLAY_DIR)/clay.h $(BUILD_OBJ)/clay.c
 	mkdir -p $(SRC)/clay-odin/android
 	clang-21 -c -DCLAY_IMPLEMENTATION -o $(BUILD_OBJ)/clay.o -ffreestanding -static -target aarch64-linux-android21 $(BUILD_OBJ)/clay.c -fPIC -O3
@@ -93,6 +95,14 @@ apk: odin_android
 	export ODIN_ANDROID_NDK=$(NDK); \
 	odin bundle android android -android-keystore:$(HOME)/.android/debug.keystore -android-keystore-password:"android"
 
+connect:
+	adb connect $(IP)
+
+install: apk
+	adb install test.apk
+
+uninstall:
+	adb uninstall com.couchpotato007.brew_timer
 
 clean:
 	rm -rf build

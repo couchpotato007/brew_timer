@@ -29,6 +29,59 @@ update_ui_scale :: proc() {
 	}
 }
 
+Space :: enum {
+	XXS,
+	XS,
+	SM,
+	MD,
+	LG,
+	XL,
+	XXL,
+}
+space_px := [Space]i32 {
+	.XXS = 2,
+	.XS  = 4,
+	.SM  = 6,
+	.MD  = 8,
+	.LG  = 16,
+	.XL  = 24,
+	.XXL = 32,
+}
+sp_space :: proc(s: Space) -> u16 {return sd(space_px[s])}
+
+Radius :: enum {
+	SM,
+	MD,
+	LG,
+	Full,
+}
+radius_px := [Radius]i32 {
+	.SM   = 8,
+	.MD   = 16,
+	.LG   = 24,
+	.Full = 999,
+}
+radius :: proc(r: Radius) -> f32 {return f32(sd(radius_px[r]))}
+
+Font :: enum {
+	Caption,
+	Body,
+	Label,
+	Value,
+	Display,
+	Huge,
+}
+font_px := [Font]f32 {
+	.Caption = 16,
+	.Body    = 18,
+	.Label   = 22,
+	.Value   = 28,
+	.Display = 34,
+	.Huge    = 58,
+}
+font_size :: proc(f: Font) -> u16 {return sp(font_px[f])}
+
+
 sp :: proc(base: f32) -> u16 {
 	return u16(base * ui_scale + 0.5)
 }
