@@ -17,6 +17,23 @@ droplet_tex: raylib.Texture2D
 
 any_hovered := false
 
+Screen :: enum {
+	Calculator,
+	Recipe,
+}
+
+App_State :: struct {
+	current_screen: Screen,
+}
+
+app_state := App_State {
+	current_screen = .Calculator,
+}
+
+
+navigate_to :: proc(screen: Screen) {
+	app_state.current_screen = screen
+}
 
 pressed :: proc() -> bool {
 	if clay.Hovered() {
@@ -45,18 +62,18 @@ createLayout :: proc(lerpValue: f32, frametime: f32) -> clay.ClayArray(clay.Rend
 		backgroundColor = COLOR_BASE,
 	},
 	) {
-		Calculator()
-		if clay.UI_AutoId()(
-		{
-			layout = {sizing = {width = clay.SizingGrow(), height = clay.SizingFixed(f32(sd(80)))}},
-			backgroundColor = COLOR_SURFACE0,
-			cornerRadius = clay.CornerRadiusAll(radius(.MD)),
-		},
-		) {
+		switch app_state.current_screen {
+			case .Calculator:
+				Calculator()
+			case .Recipe:
+				Render_Recipe()
 		}
+
+		Navigation()
 	}
 	return clay.EndLayout(frametime)
 }
+
 
 error_handler :: proc "c" (errorData: clay.ErrorData) {
 	context = runtime.default_context()
@@ -83,6 +100,9 @@ init :: proc() {
 	when ODIN_PLATFORM_SUBTARGET == .Android {
 		raylib.SetConfigFlags({.VSYNC_HINT, .WINDOW_RESIZABLE})
 		raylib.InitWindow(0, 0, "Pour Over Calc")
+
+		// init android keyboard
+		android_install_text_input_hook()
 	}
 	minMemorySize: c.size_t = cast(c.size_t)clay.MinMemorySize()
 	memory := make([^]u8, minMemorySize)

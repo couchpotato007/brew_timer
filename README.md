@@ -42,4 +42,4 @@ need them.
 # AI Usage
 
 I used Claude to figure out how to link with the NDK and for the native entry
-point
+point, native keyboard

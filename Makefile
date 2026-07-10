@@ -73,6 +73,9 @@ native_glue:
 		-o $(BUILD_OBJ)/native_app_glue.o
 	$(CC_ANDROID) -c native/main.c \
 		-o $(BUILD_OBJ)/main.o
+	$(CC_ANDROID) -c native/keyboard.c \
+		-I$(NDK_GLUE_INC) \
+		-o $(BUILD_OBJ)/keyboard.o
 
 
 odin_android: raylib_android odin_object native_glue clay_android
