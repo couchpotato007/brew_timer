@@ -21,7 +21,6 @@ NDK_GLUE_INC=$(NDK)sources/android/native_app_glue
 # Toolchain
 CMAKE=$(NDK)/cmake/3.22.1/bin/cmake
 
-
 desktop:
 	$(ODIN) build $(SRC) -out:build/$(APP)_desktop
 
@@ -88,7 +87,6 @@ odin_android: raylib_android odin_object native_glue clay_android
 		-lGLESv2 -llog -landroid -lEGL -lm -lOpenSLES -ldl \
 		-Wl,--wrap,fopen \
 		-Wl,-u,ANativeActivity_onCreate
-
 
 apk: odin_android
 	mkdir -p android/assets

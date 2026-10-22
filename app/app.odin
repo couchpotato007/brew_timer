@@ -87,7 +87,7 @@ load_font :: proc(fontId: u16, fontSize: u16, path: cstring) {
 	assign_at(
 		&raylib_fonts,
 		fontId,
-		Raylib_Font{font = raylib.LoadFontEx(path, cast(i32)fontSize, nil, 0), fontId = cast(u16)fontId},
+		Raylib_Font{font = raylib.LoadFontEx(path, cast(i32)fontSize, nil, 25000), fontId = cast(u16)fontId},
 	)
 	raylib.SetTextureFilter(raylib_fonts[fontId].font.texture, raylib.TextureFilter.TRILINEAR)
 }
@@ -147,7 +147,7 @@ update :: proc() {
 		raylib.IsMouseButtonDown(raylib.MouseButton.LEFT),
 	)
 
-	clay.UpdateScrollContainers(false, transmute(clay.Vector2)raylib.GetMouseWheelMoveV(), raylib.GetFrameTime())
+	clay.UpdateScrollContainers(true, transmute(clay.Vector2)raylib.GetMouseWheelMoveV(), raylib.GetFrameTime())
 	clay.SetLayoutDimensions({cast(f32)raylib.GetScreenWidth(), cast(f32)raylib.GetScreenHeight()})
 
 	update_ui_scale()

@@ -1,8 +1,6 @@
 // DISCLAIMER Claude Code Usage
 // This is very ass that you have to go through the fucking jvm to get
 // keyboad inputs
-//
-// Why is android so ass
 
 #include <android/input.h>
 #include <android_native_app_glue.h>

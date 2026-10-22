@@ -4,3 +4,6 @@
 [submodule "external/clay"]
 	path = external/clay
 	url = https://github.com/nicbarker/clay.git
+[submodule "external/kiln"]
+	path = external/kiln
+	url = git@github.com:couchpotato007/kiln.git
